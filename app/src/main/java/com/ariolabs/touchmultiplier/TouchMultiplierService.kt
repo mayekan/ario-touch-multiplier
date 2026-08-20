@@ -10,15 +10,23 @@ import android.os.Looper
 
 class TouchMultiplierService : AccessibilityService() {
 
-    private var isEnabled = false
-    private val handler = Handler(Looper.getMainLooper())
-
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // این سرویس آماده دریافت رویدادهاست
+    companion object {
+        var instance: TouchMultiplierService? = null
+            private set
     }
 
+    var isEnabled = false
+    private val handler = Handler(Looper.getMainLooper())
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+    }
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        // فعال و غیرفعال شدن با کلیدهای صدا
+        // فشردن دکمه ولوم بالا یا پایین برای فعال/غیرفعال کردن
         if (event.action == KeyEvent.ACTION_DOWN) {
             if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP || event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                 isEnabled = !isEnabled
@@ -28,8 +36,7 @@ class TouchMultiplierService : AccessibilityService() {
         return super.onKeyEvent(event)
     }
 
-    // تابع شبیه‌سازی ۱۰ ضربه متوالی در مختصات لمس‌شده
-    fun triggerMultipleTaps(x: Float, y: Float) {
+    fun performMultiTap(x: Float, y: Float) {
         if (!isEnabled) return
 
         for (i in 0 until 10) {
@@ -37,11 +44,16 @@ class TouchMultiplierService : AccessibilityService() {
                 val path = Path().apply {
                     moveTo(x, y)
                 }
-                val stroke = GestureDescription.StrokeDescription(path, 0, 50)
+                val stroke = GestureDescription.StrokeDescription(path, 0, 30)
                 val builder = GestureDescription.Builder().addStroke(stroke)
                 dispatchGesture(builder.build(), null, null)
-            }, (i * 35).toLong()) // هر ۳۵ میلی‌ثانیه یک کلیک سریع
+            }, (i * 25).toLong()) // هر ۲۵ میلی‌ثانیه یک کلیک سریع
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
     }
 
     override fun onInterrupt() {}
