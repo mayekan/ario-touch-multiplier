@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Ario Touch Multiplier</string>
+    <string name="accessibility_service_desc">Enables multi-touch magnification triggered by hardware volume keys for gaming assistance.</string>
+</resources>
